@@ -4,7 +4,7 @@ set -exu
 trap cleanup SIGHUP SIGINT SIGTERM EXIT
 
 cleanup() {
-  umount "$WORK_DIR/extracted-iso"
+  umount "$WORK_DIR/extracted-iso" 2>/dev/null || true # Ignore errors if not mounted
   rm -rf "$WORK_DIR"
   rm -rf "$CONFIG_DIR"
 }
@@ -40,20 +40,12 @@ if ! command -v xorriso &>/dev/null; then
   apt-get update
   apt-get install -y xorriso
 fi
-if [ ! -f "/usr/lib/grub/i386-pc/boot_hybrid.img" ]; then
-  echo "GRUB boot file not found. Installing grub-pc-bin..."
-  apt-get update
-  apt-get install -y grub-pc-bin
-fi
 if [ ! -f "$ORIGINAL_ISO_NAME" ]; then
   echo "--- Downloading Ubuntu Server ISO from $ISO_URL ---"
   wget -O "$ORIGINAL_ISO_NAME" "$ISO_URL"
 else
   echo "--- Ubuntu Server ISO '$ORIGINAL_ISO_NAME' already exists. Skipping download. ---"
 fi
-umount "$WORK_DIR/extracted-iso" 2>/dev/null || true # Ignore errors if not mounted
-rm -rf "$WORK_DIR"
-rm -rf "$CONFIG_DIR"
 
 mkdir -p "$CONFIG_DIR"
 mkdir -p "$WORK_DIR/extracted-iso"
